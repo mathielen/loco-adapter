@@ -182,11 +182,29 @@ class Loco implements Storage, TransferableStorage
                     }
 
                     $data = $this->client->export()->locale($project->getApiKey(), $locale, 'xliff', $params);
+
+                    $data = $this->fixCustomTargetLanguage($data);
+
                     $catalogue->addCatalogue(XliffConverter::contentToCatalogue($data, $locale, $domain));
                 } catch (NotFoundException $e) {
                 }
             }
         }
+    }
+
+    /**
+     * TODO ugly hack for this problem: https://bugzilla.gnome.org/show_bug.cgi?id=749763
+     *
+     * The symfony XliffConverter validates the xliff with the php-builtin dom-library which uses libxml2 under the hood.
+     * This way a custom-extension language-id (like "en-x-custom") will result in an error although it is allowed
+     * by RFC 3066.
+     * If we use a custom-language in loco it will be put in the xliff's "target-language" field.
+     *
+     * This fix will simply remove anything after the basic language tag, so the validation must succeed.
+     */
+    private function fixCustomTargetLanguage(string $data): string
+    {
+        return preg_replace('/target-language="(\w+)(-x-.+)"/', 'target-language="$1"', $data);
     }
 
     /**

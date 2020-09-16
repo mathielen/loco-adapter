@@ -204,7 +204,7 @@ class Loco implements Storage, TransferableStorage
      */
     private function fixCustomTargetLanguage(string $data): string
     {
-        return preg_replace('/target-language="(\w+)(-x-.+)"/', 'target-language="$1"', $data);
+        return preg_replace('/target-language="(\w+)-x-\w+"/', 'target-language="$1"', $data);
     }
 
     /**
